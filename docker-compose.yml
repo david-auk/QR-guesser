@@ -4,7 +4,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        SPRINGBOOT_PORT: ${SPRINGBOOT_PORT}
     environment:
+
+      # Spring Boot specific vars
+      SERVER_PORT: ${SPRINGBOOT_PORT}
+
+      # Spotify specific vars
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
+      SPOTIFY_REDIRECT_URL: ${SPOTIFY_REDIRECT_URL}
 
       # DB specific vars
       DB_HOST: mysql
@@ -14,8 +24,10 @@ services:
       # DAO specific vars
       MYSQL_USER_NAME: ${MYSQL_USER_NAME}
       MYSQL_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
+    expose:
+      - ${SPRINGBOOT_PORT}
     ports:
-      - "8080:8080"
+      - "${SPRINGBOOT_PORT}:${SPRINGBOOT_PORT}"
     depends_on:
       mariadb:
         condition: service_healthy
@@ -24,7 +36,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: [ "CMD-SHELL", "curl --silent http://localhost:8080/ || exit 1" ]
+      test: [ "CMD-SHELL", "curl --silent http://localhost:${SPRINGBOOT_PORT}/ || exit 1" ]
       interval: 5s       # Check every 5 seconds
       timeout: 3s        # Timeout after 3 seconds
       retries: 10         # Retry up to 5 times before marking as unhealthy
