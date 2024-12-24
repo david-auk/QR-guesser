@@ -1,0 +1,62 @@
+services:
+  java:
+    container_name: qr-guesser-springboot-gradle-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+
+      # DB specific vars
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: ${MYSQL_DATABASE_NAME}
+
+      # DAO specific vars
+      MYSQL_USER_NAME: ${MYSQL_USER_NAME}
+      MYSQL_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src:ro  # Mount the local 'src' folder into the container
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent http://localhost:8080/ || exit 1" ]
+      interval: 5s       # Check every 5 seconds
+      timeout: 3s        # Timeout after 3 seconds
+      retries: 10         # Retry up to 5 times before marking as unhealthy
+
+  mariadb:
+    image: mariadb:latest
+    container_name: qr-guesser-mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_NAME}
+      MYSQL_USER: ${MYSQL_USER_NAME}
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - qr-guesser-mariadb_data:/var/lib/mysql      # Persistent storage for the database
+      - ./mariadb/script.sql:/docker-entrypoint-initdb.d/init.sql # Mount sript within initdb folder so the script runs at first container start
+    expose:
+      - "3306:3306"  # Expose port 3306 for database access
+    ports:
+      - "3306:3306" # Port the exposed port for database DAO debugging within intelliJ
+    networks:
+      - backend
+
+volumes:
+  qr-guesser-mariadb_data:
+
+networks:
+  backend:
+    internal: false
