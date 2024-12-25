@@ -2,7 +2,8 @@ package spotify;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import utils.ProcessCallback;
+import utils.AssertCallback;
+import utils.CallbackInterface;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -11,23 +12,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PlaylistScan {
 
     String id;
     Playlist playlist;
-    List<Track> tracks;
+    List<Map<Track, Timestamp>> tracks;
     User requestedByUser;
     boolean exportComplete;
     Timestamp timestamp;
     PlaylistScan extendsPlaylistScan;
 
-    public PlaylistScan(String id, Playlist playlist, List<Track> tracks, User requestedByUser, boolean exportComplete, Timestamp timestamp, PlaylistScan extendsPlaylistScan) {
+    public PlaylistScan(String id, Playlist playlist, List<Map<Track, Timestamp>> tracks, User requestedByUser, boolean exportComplete, Timestamp timestamp, PlaylistScan extendsPlaylistScan) {
         this.id = id;
         this.playlist = playlist;
         this.tracks = tracks;
@@ -45,7 +43,7 @@ public class PlaylistScan {
         return playlist;
     }
 
-    public List<Track> getTracks() {
+    public List<Map<Track, Timestamp>> getTracks() {
         return tracks;
     }
 
@@ -65,11 +63,24 @@ public class PlaylistScan {
         return extendsPlaylistScan;
     }
 
-    public static PlaylistScan buildFromApi(String playlistId, String accessToken, User requestedByUser, ProcessCallback processCallback) throws Exception {
+    public static PlaylistScan buildFromApi(String playlistId, String accessToken, User requestedByUser, AssertCallback callback) {
         String apiUrl = "https://api.spotify.com/v1/playlists/" + playlistId;
 
-        JSONObject data = getData(apiUrl, accessToken, null);
+        Map<String, String> status = new HashMap<>();
 
+        status.put("code", "100");
+        status.put("description", "Retrieving playlist items from Spotify API");
+        callback.update(status);
+
+        JSONObject data;
+        try {
+            data = getData(apiUrl, accessToken, null);
+        } catch (Exception e) {
+            status.put("code", "400");
+            status.put("description", "Failed to Retrieve playlist items from Spotify API. ERROR: " + e.getMessage());
+            callback.update(status);
+            return null;
+        }
         // Build playlist record
         Playlist playlist = new Playlist(
                 data.getString("id"),
@@ -77,16 +88,22 @@ public class PlaylistScan {
                 data.getJSONArray("images").getJSONObject(0).getString("url")
         );
 
-        List<Track> tracks = new ArrayList<>();
+        List<Map<Track, Timestamp>> tracks = new ArrayList<>();
         JSONObject tracksData = data.getJSONObject("tracks");
 
         String nextUrl = tracksData.optString("next", null);
+
+        status.put("description", "Building playlist items");
+        callback.update(status);
 
         // Populate tracklist
         do {
             JSONArray items = tracksData.getJSONArray("items");
 
             for (int i = 0; i < items.length(); i++) {
+
+                // TODO implement cancel logic
+
                 JSONObject item = items.getJSONObject(i);
                 JSONObject trackJson = item.optJSONObject("track");
 
@@ -112,20 +129,43 @@ public class PlaylistScan {
                         Integer.parseInt(albumJson.getString("release_date").substring(0, 4))
                 );
 
-                tracks.add(new Track(
+                Track track = new Track(
                         trackJson.getString("id"),
                         trackJson.getString("name"),
                         album,
-                        artists//,
-                        //Timestamp.valueOf(item.getString("added_at").replace("T", " ").replace("Z", ""))
-                ));
+                        artists
+                );
+
+                Timestamp addedAt = Timestamp.valueOf(item.getString("added_at").replace("T", " ").replace("Z", ""));
+
+                // Create a new map
+                Map<Track, Timestamp> trackEntry = new HashMap<>();
+
+                // Add track and time to this map
+                trackEntry.put(track, addedAt);
+
+                // Add this map to the tracklist
+                tracks.add(trackEntry);
+
             }
 
             if (nextUrl != null) {
-                tracksData = getData(nextUrl, accessToken, nextUrl);
+                try {
+                    tracksData = getData(nextUrl, accessToken, nextUrl);
+                } catch (Exception e) {
+                    status.put("code", "400");
+                    status.put("description", "Failed to Retrieve items from Spotify API NEXT URL. ERROR: " + e.getMessage());
+                    callback.update(status);
+                    return null;
+                }
                 nextUrl = tracksData.optString("next", null);
             }
         } while (nextUrl != null);
+
+        status.put("code", "200");
+        status.put("description", "Scan completed");
+
+        callback.update(status);
 
         return new PlaylistScan(
                 null,
