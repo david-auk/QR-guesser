@@ -12,8 +12,5 @@ COPY gradle gradle
 # Download dependencies and cache them to avoid re-downloading
 RUN gradle build --no-daemon --dry-run || true
 
-# Expose the port your Spring Boot app uses
-EXPOSE 8080
-
 # Run the Spring Boot application from the mountpoint defined in docker-compose.yml
 CMD ["gradle", "bootRun", "--no-daemon", "-Dspring.main.sources=com.springboot.Application"]

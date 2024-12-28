@@ -27,6 +27,12 @@ dependencies {
 	// Add the mysql connector to dependencies
 	implementation group: 'com.mysql', name: 'mysql-connector-j', version: '9.1.0'
 
+	// Add json parser for application wide request logic
+	implementation group: 'org.json', name: 'json', version: '20231013'
+
+	// Add servlet for cookie modulation
+	implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

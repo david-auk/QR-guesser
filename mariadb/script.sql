@@ -1,3 +1,6 @@
+-- Turn on scheduler
+SET GLOBAL event_scheduler = ON;
+
 -- Create the `user` table
 CREATE TABLE user (
     id VARCHAR(255) PRIMARY KEY,
@@ -67,3 +70,20 @@ CREATE TABLE playlist_scan_track (
     FOREIGN KEY (playlist_scan_id) REFERENCES playlist_scan(id) ON DELETE CASCADE,
     FOREIGN KEY (track_id) REFERENCES track(id) ON DELETE CASCADE
 );
+
+-- Create the `access_token` table
+CREATE TABLE access_token (
+    id UUID NOT NULL DEFAULT UUID() PRIMARY KEY,
+    access_token VARCHAR(255) NOT NULL,
+    refresh_token VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 1 HOUR),
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE EVENT auto_delete_old_access_tokens
+ON SCHEDULE EVERY 1 DAY
+DO
+DELETE FROM access_token
+WHERE expires_at < NOW() - INTERVAL 7 DAY;

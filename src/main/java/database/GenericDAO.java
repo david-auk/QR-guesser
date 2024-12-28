@@ -10,16 +10,9 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
     protected final String tableName;
 
     // Constructor to enforce initialization
-    protected GenericDAO(String tableName, String username, String password) {
-        if (tableName == null || username == null || password == null) {
-            throw new IllegalArgumentException("tableName, username or password must not be null.");
-        }
-        this.connection = getConnection(username, password);
+    protected GenericDAO(String tableName) {
+        this.connection = Database.getConnection();
         this.tableName = tableName;
-    }
-
-    static private Connection getConnection(String username, String password) {
-        return Database.getConnection(username, password);
     }
 
     @Override
@@ -29,14 +22,14 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(String id) {
         String query = "DELETE FROM %s WHERE id = ?";
         query = String.format(query, tableName);
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
 
-            preparedStatement.setInt(1, id);
+            preparedStatement.setString(1, id);
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
@@ -56,7 +49,7 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-                entity = get(resultSet.getInt("ID"));
+                entity = get(resultSet.getString("id"));
             }
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
@@ -76,7 +69,7 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
-                T entity = get(resultSet.getInt("ID"));
+                T entity = get(resultSet.getString("ID"));
                 entities.add(entity);
             }
         } catch (SQLException e) {
