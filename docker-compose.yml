@@ -17,9 +17,11 @@ services:
       SPOTIFY_REDIRECT_URL: ${SPOTIFY_REDIRECT_URL}
 
       # DB specific vars
-      DB_HOST: mysql
+      DB_HOST: mariadb
       DB_PORT: "3306"
       DB_DATABASE: ${MYSQL_DATABASE_NAME}
+      DB_USER_NAME: ${MYSQL_USER_NAME}
+      DB_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
 
       # DAO specific vars
       MYSQL_USER_NAME: ${MYSQL_USER_NAME}

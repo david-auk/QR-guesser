@@ -3,6 +3,8 @@ package utils;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO Make singleton
+
 public class AssertCallback implements CallbackInterface<Map<String, String>>{
 
     static private final Map<String, Map<String, String>> globalTasksStatus = new HashMap<>();

@@ -3,7 +3,6 @@ package spotify;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import utils.AssertCallback;
-import utils.CallbackInterface;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -63,7 +62,7 @@ public class PlaylistScan {
         return extendsPlaylistScan;
     }
 
-    public static PlaylistScan buildFromApi(String playlistId, String accessToken, User requestedByUser, AssertCallback callback) {
+    public static PlaylistScan buildFromApi(String playlistId, AccessToken accessToken, AssertCallback callback) {
         String apiUrl = "https://api.spotify.com/v1/playlists/" + playlistId;
 
         Map<String, String> status = new HashMap<>();
@@ -171,18 +170,18 @@ public class PlaylistScan {
                 null,
                 playlist,
                 tracks,
-                requestedByUser,
+                accessToken.getUser(),
                 false,
                 new Timestamp(System.currentTimeMillis()),
                 null
         );
     }
 
-    public static PlaylistScan buildFromApi(String playlistId, String accessToken, User requestedByUser) throws Exception {
-        return buildFromApi(playlistId, accessToken, requestedByUser, null);
+    public static PlaylistScan buildFromApi(String playlistId, AccessToken accessToken) throws Exception {
+        return buildFromApi(playlistId, accessToken, null);
     }
 
-    private static JSONObject getData(String url, String accessToken, String next) throws Exception {
+    private static JSONObject getData(String url, AccessToken accessToken, String next) throws Exception {
         String fields;
         Map<String, String> params;
 
@@ -202,7 +201,7 @@ public class PlaylistScan {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(url + "?" + buildQueryString(params)))
-                .header("Authorization", "Bearer " + accessToken)
+                .header("Authorization", "Bearer " + accessToken.getAccessToken())
                 .GET()
                 .build();
 
