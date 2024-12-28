@@ -1,7 +1,8 @@
 package com.springboot.backend.controllers;
 
-// Import routing template
+// Import routing template and vars
 import com.springboot.constant.Template;
+import static com.springboot.constant.GlobalVars.*;
 
 // Import springboot classes
 import database.AccessTokenDAO;
@@ -14,14 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.view.RedirectView;
 
 // Import Http classes
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 // Rest
 import spotify.AccessToken;
-import spotify.User;
 
-import static com.springboot.constant.GlobalVars.*;
+import static com.springboot.backend.utils.AccessTokenCookieUtil.setAccessTokenCookie;
 
 @Controller
 @RequestMapping("/backend/auth")
@@ -67,22 +66,9 @@ public class AuthController {
             }
         }
 
-        // Create the cookie with the access token record id, so it can later be referenced to get the token and the associated user
-        Cookie accessTokenCookie = getAccessTokenCookie(accessTokenObj);
-
-        // Add the cookie to the response
-        response.addCookie(accessTokenCookie);
+        setAccessTokenCookie(accessTokenObj, response);
 
         // Redirect to the original URL
         return "redirect:" + state;
-    }
-
-    private static Cookie getAccessTokenCookie(AccessToken accessTokenObj) {
-        Cookie accessTokenCookie = new Cookie("access_token_id", accessTokenObj.getId());
-        accessTokenCookie.setHttpOnly(true); // Ensure it's HTTP-only
-        accessTokenCookie.setSecure(true); // Use secure cookies in production
-        accessTokenCookie.setPath("/"); // Set the cookie path
-        accessTokenCookie.setMaxAge(TOKEN_EXPIRATION_DURATION_S); // Set TTL
-        return accessTokenCookie;
     }
 }

@@ -19,25 +19,27 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
     @Override
     public void add(AccessToken accessToken) {
 
-        // TODO add already exists check
+        if (get(accessToken.getId()) == null) {
+            userDAO.add(accessToken.getUser());
 
-        userDAO.add(accessToken.getUser());
+            String query = "INSERT INTO access_token (id, access_token, refresh_token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)";
 
-        String query = "INSERT INTO access_token (id, access_token, refresh_token, user_id) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, accessToken.getId());
+                preparedStatement.setString(2, accessToken.getAccessToken());
+                preparedStatement.setString(3, accessToken.getRefreshToken());
+                preparedStatement.setString(4, accessToken.getUser().id());
+                preparedStatement.setTimestamp(5, accessToken.getCreatedAt());
+                preparedStatement.setTimestamp(6, accessToken.getExpiresAt());
 
-            preparedStatement.setString(1, accessToken.getId());
-            preparedStatement.setString(2, accessToken.getAccessToken());
-            preparedStatement.setString(3, accessToken.getRefreshToken());
-            preparedStatement.setString(4, accessToken.getUser().id());
-            preparedStatement.executeUpdate();
+                preparedStatement.executeUpdate();
 
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            } catch (SQLException e) {
+                System.out.println("Error: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
-
     }
 
     @Override
@@ -46,12 +48,13 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
             throw new IllegalArgumentException("AccessToken has no ID");
         }
 
-        String query = "UPDATE access_token SET access_token = ?, refresh_token = ? WHERE id = ?";
+        String query = "UPDATE access_token SET access_token = ?, refresh_token = ?, expires_at = ? WHERE id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, accessToken.getAccessToken());
             preparedStatement.setString(2, accessToken.getRefreshToken());
-            preparedStatement.setString(3, accessToken.getId());
+            preparedStatement.setTimestamp(3, accessToken.getExpiresAt());
+            preparedStatement.setString(4, accessToken.getId());
 
             int rowsAffected = preparedStatement.executeUpdate();
             if (rowsAffected == 0) {
@@ -65,7 +68,7 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
 
     @Override
     public AccessToken get(String id) {
-        String query = "SELECT * FROM user WHERE id = ?";
+        String query = "SELECT * FROM access_token WHERE id = ?";
         AccessToken accessToken = null;
 
         try {
@@ -80,7 +83,8 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
                     resultSet.getString("access_token"),
                     resultSet.getString("refresh_token"),
                     userDAO.get(resultSet.getString("user_id")),
-                    resultSet.getTimestamp("timestamp")
+                    resultSet.getTimestamp("created_at"),
+                    resultSet.getTimestamp("expires_at")
                 );
             }
 

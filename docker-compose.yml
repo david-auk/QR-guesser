@@ -26,6 +26,9 @@ services:
       # DAO specific vars
       MYSQL_USER_NAME: ${MYSQL_USER_NAME}
       MYSQL_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
+
+      # System specific vars
+      TZ: ${TIMEZONE}
     expose:
       - ${SPRINGBOOT_PORT}
     ports:
@@ -44,14 +47,17 @@ services:
       retries: 10         # Retry up to 5 times before marking as unhealthy
 
   mariadb:
-    image: mariadb:latest
     container_name: qr-guesser-mariadb
+    build:
+      context: mariadb
+      dockerfile: Dockerfile
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE_NAME}
       MYSQL_USER: ${MYSQL_USER_NAME}
       MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
+      TZ: ${TIMEZONE}
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       start_period: 10s

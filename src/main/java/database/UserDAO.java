@@ -14,20 +14,21 @@ public class UserDAO extends GenericDAO<User> {
     @Override
     public void add(User user) {
 
-        // TODO add already exists check
+        // Check if user already exists
+        if (get(user.id()) == null) {
+            String query = "INSERT INTO user (id, name, profile_picture_image_url) VALUES (?, ?, ?)";
 
-        String query = "INSERT INTO user (id, name, profile_picture_image_url) VALUES (?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, user.id());
+                preparedStatement.setString(2, user.name());
+                preparedStatement.setString(3, user.profilePictureImageUrl());
+                preparedStatement.executeUpdate();
 
-            preparedStatement.setString(1, user.id());
-            preparedStatement.setString(2, user.name());
-            preparedStatement.setString(3, user.profilePictureImageUrl());
-            preparedStatement.executeUpdate();
-
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            } catch (SQLException e) {
+                System.out.println("Error: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 

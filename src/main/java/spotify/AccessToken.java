@@ -24,15 +24,17 @@ public class AccessToken {
     private String accessToken;
     private String refreshToken;
     private final User user;
+    private final Timestamp createdAt;
     private Timestamp expiresAt;
 
     // Constructor for DAO
-    public AccessToken(String id, String accessToken, String refreshToken, User user, Timestamp createdAt) {
+    public AccessToken(String id, String accessToken, String refreshToken, User user, Timestamp createdAt, Timestamp expiresAt) {
         this.id = id;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.user = user;
-        this.expiresAt = new Timestamp(createdAt.getTime() + TOKEN_EXPIRATION_DURATION_MS);
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
     }
 
     // Constructor for Creation to add to DAO
@@ -41,7 +43,8 @@ public class AccessToken {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.user = user;
-        this.expiresAt = new Timestamp(System.currentTimeMillis() + TOKEN_EXPIRATION_DURATION_MS);
+        this.createdAt = new Timestamp(System.currentTimeMillis());
+        this.expiresAt = new Timestamp(createdAt.getTime() + TOKEN_EXPIRATION_DURATION_MS);
     }
 
     public String getId() {
@@ -58,6 +61,14 @@ public class AccessToken {
 
     public User getUser() {
         return user;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public Timestamp getExpiresAt() {
+        return expiresAt;
     }
 
     public boolean isExpired() {

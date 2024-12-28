@@ -77,7 +77,8 @@ CREATE TABLE access_token (
     access_token VARCHAR(255) NOT NULL,
     refresh_token VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 1 HOUR),
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
@@ -85,4 +86,4 @@ CREATE EVENT auto_delete_old_access_tokens
 ON SCHEDULE EVERY 1 DAY
 DO
 DELETE FROM access_token
-WHERE timestamp < NOW() - INTERVAL 7 DAY;
+WHERE expires_at < NOW() - INTERVAL 7 DAY;

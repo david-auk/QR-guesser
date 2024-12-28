@@ -18,13 +18,13 @@ public class PlaylistScan {
 
     String id;
     Playlist playlist;
-    List<Map<Track, Timestamp>> tracks;
+    List<Map<String, Object>> tracks;
     User requestedByUser;
     boolean exportComplete;
     Timestamp timestamp;
     PlaylistScan extendsPlaylistScan;
 
-    public PlaylistScan(String id, Playlist playlist, List<Map<Track, Timestamp>> tracks, User requestedByUser, boolean exportComplete, Timestamp timestamp, PlaylistScan extendsPlaylistScan) {
+    public PlaylistScan(String id, Playlist playlist, List<Map<String, Object>> tracks, User requestedByUser, boolean exportComplete, Timestamp timestamp, PlaylistScan extendsPlaylistScan) {
         this.id = id;
         this.playlist = playlist;
         this.tracks = tracks;
@@ -42,7 +42,7 @@ public class PlaylistScan {
         return playlist;
     }
 
-    public List<Map<Track, Timestamp>> getTracks() {
+    public List<Map<String, Object>> getTracks() {
         return tracks;
     }
 
@@ -87,7 +87,7 @@ public class PlaylistScan {
                 data.getJSONArray("images").getJSONObject(0).getString("url")
         );
 
-        List<Map<Track, Timestamp>> tracks = new ArrayList<>();
+        List<Map<String, Object>> tracks = new ArrayList<>();
         JSONObject tracksData = data.getJSONObject("tracks");
 
         String nextUrl = tracksData.optString("next", null);
@@ -138,10 +138,11 @@ public class PlaylistScan {
                 Timestamp addedAt = Timestamp.valueOf(item.getString("added_at").replace("T", " ").replace("Z", ""));
 
                 // Create a new map
-                Map<Track, Timestamp> trackEntry = new HashMap<>();
+                Map<String, Object> trackEntry = new HashMap<>();
 
                 // Add track and time to this map
-                trackEntry.put(track, addedAt);
+                trackEntry.put("track", track);
+                trackEntry.put("added_at", addedAt);
 
                 // Add this map to the tracklist
                 tracks.add(trackEntry);
