@@ -1,8 +1,8 @@
 package com.springboot.backend.utils;
 
 import com.springboot.exceptions.UserUnauthenticatedException;
-import database.AccessTokenDAO;
-import database.UserDAO;
+import database.tables.AccessTokenDAO;
+import database.tables.UserDAO;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

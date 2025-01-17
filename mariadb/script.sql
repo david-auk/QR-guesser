@@ -37,7 +37,7 @@ CREATE TABLE artist (
 -- Create the `album` table
 CREATE TABLE album (
     id VARCHAR(255) PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     release_year INT NOT NULL
 );
 
