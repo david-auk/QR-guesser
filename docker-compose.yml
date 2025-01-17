@@ -26,38 +26,49 @@ services:
       # DAO specific vars
       MYSQL_USER_NAME: ${MYSQL_USER_NAME}
       MYSQL_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
-
-      # System specific vars
-      TZ: ${TIMEZONE}
     expose:
       - ${SPRINGBOOT_PORT}
     ports:
       - "${SPRINGBOOT_PORT}:${SPRINGBOOT_PORT}"
     depends_on:
+      redis:
+        condition: service_healthy
       mariadb:
         condition: service_healthy
     volumes:
       - ./src:/app/src:ro  # Mount the local 'src' folder into the container
     networks:
       - backend
+      - frontend
     healthcheck:
       test: [ "CMD-SHELL", "curl --silent http://localhost:${SPRINGBOOT_PORT}/ || exit 1" ]
       interval: 5s       # Check every 5 seconds
       timeout: 3s        # Timeout after 3 seconds
       retries: 10         # Retry up to 5 times before marking as unhealthy
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    expose:
+      - "6379:6379"
+    networks:
+      - backend
+
   mariadb:
     container_name: qr-guesser-mariadb
-    build:
-      context: mariadb
-      dockerfile: Dockerfile
+    image: mariadb:latest
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE_NAME}
       MYSQL_USER: ${MYSQL_USER_NAME}
       MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
-      TZ: ${TIMEZONE}
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       start_period: 10s
@@ -73,10 +84,13 @@ services:
       - "3306:3306" # Port the exposed port for database DAO debugging within intelliJ
     networks:
       - backend
+      - frontend
 
 volumes:
   qr-guesser-mariadb_data:
 
 networks:
-  backend:
+  frontend:
     internal: false
+  backend:
+    internal: true

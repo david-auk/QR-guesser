@@ -3,7 +3,6 @@ package database;
 import spotify.User;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 public class UserDAO extends GenericDAO<User> {
 
@@ -82,5 +81,4 @@ public class UserDAO extends GenericDAO<User> {
 
         return user;
     }
-
 }
