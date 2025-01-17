@@ -1,8 +1,8 @@
 package spotify;
 
+import com.springboot.backend.utils.AsyncInteractive;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import utils.AssertCallback;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -62,22 +62,18 @@ public class PlaylistScan {
         return extendsPlaylistScan;
     }
 
-    public static PlaylistScan buildFromApi(String playlistId, AccessToken accessToken, AssertCallback callback) {
+    public static PlaylistScan buildFromApi(String playlistId, AccessToken accessToken, AsyncInteractive asyncInteractive) {
         String apiUrl = "https://api.spotify.com/v1/playlists/" + playlistId;
 
-        Map<String, String> status = new HashMap<>();
-
-        status.put("code", "100");
-        status.put("description", "Retrieving playlist items from Spotify API");
-        callback.update(status);
+        asyncInteractive.update("code", "100");
+        asyncInteractive.update("description", "Retrieving playlist items from Spotify API");
 
         JSONObject data;
         try {
             data = getData(apiUrl, accessToken, null);
         } catch (Exception e) {
-            status.put("code", "400");
-            status.put("description", "Failed to Retrieve playlist items from Spotify API. ERROR: " + e.getMessage());
-            callback.update(status);
+            asyncInteractive.update("code", "400");
+            asyncInteractive.update("description", "Failed to Retrieve playlist items from Spotify API. ERROR: " + e.getMessage());
             return null;
         }
         // Build playlist record
@@ -92,16 +88,13 @@ public class PlaylistScan {
 
         String nextUrl = tracksData.optString("next", null);
 
-        status.put("description", "Building playlist items");
-        callback.update(status);
+        asyncInteractive.update("description", "Building playlist items");
 
         // Populate tracklist
         do {
             JSONArray items = tracksData.getJSONArray("items");
 
             for (int i = 0; i < items.length(); i++) {
-
-                // TODO implement cancel logic
 
                 JSONObject item = items.getJSONObject(i);
                 JSONObject trackJson = item.optJSONObject("track");
@@ -153,19 +146,16 @@ public class PlaylistScan {
                 try {
                     tracksData = getData(nextUrl, accessToken, nextUrl);
                 } catch (Exception e) {
-                    status.put("code", "400");
-                    status.put("description", "Failed to Retrieve items from Spotify API NEXT URL. ERROR: " + e.getMessage());
-                    callback.update(status);
+                    asyncInteractive.update("code", "400");
+                    asyncInteractive.update("description", "Failed to Retrieve items from Spotify API NEXT URL. ERROR: " + e.getMessage());
                     return null;
                 }
                 nextUrl = tracksData.optString("next", null);
             }
         } while (nextUrl != null);
 
-        status.put("code", "200");
-        status.put("description", "Scan completed");
-
-        callback.update(status);
+        asyncInteractive.update("code", "200");
+        asyncInteractive.update("description", "Scan completed");
 
         return new PlaylistScan(
                 null,
@@ -176,10 +166,6 @@ public class PlaylistScan {
                 new Timestamp(System.currentTimeMillis()),
                 null
         );
-    }
-
-    public static PlaylistScan buildFromApi(String playlistId, AccessToken accessToken) throws Exception {
-        return buildFromApi(playlistId, accessToken, null);
     }
 
     private static JSONObject getData(String url, AccessToken accessToken, String next) throws Exception {

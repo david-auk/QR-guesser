@@ -5,9 +5,7 @@ SET GLOBAL event_scheduler = ON;
 CREATE TABLE user (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    profile_picture_image_url VARCHAR(255) DEFAULT NULL,
-    last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    registry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    profile_picture_image_url VARCHAR(255) DEFAULT NULL
 );
 
 -- Create the `playlist` table
@@ -62,11 +60,11 @@ CREATE TABLE artist_track (
 
 -- Create the relationship between `playlist_scan` and `track` (many-to-many)
 CREATE TABLE playlist_scan_track (
+    id UUID NOT NULL DEFAULT UUID() PRIMARY KEY,
     playlist_scan_id UUID NOT NULL,
     track_id VARCHAR(255) NOT NULL,
     track_playlist_scan_index INT NOT NULL,
     track_added_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (playlist_scan_id, track_id, track_playlist_scan_index),
     FOREIGN KEY (playlist_scan_id) REFERENCES playlist_scan(id) ON DELETE CASCADE,
     FOREIGN KEY (track_id) REFERENCES track(id) ON DELETE CASCADE
 );

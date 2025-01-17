@@ -1,6 +1,6 @@
 package com.springboot;
 
-import com.springboot.exceptions.QrGuesserUserShouldLoginException;
+import com.springboot.exceptions.UserUnauthenticatedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,8 +15,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
     }
 
-    @ExceptionHandler(QrGuesserUserShouldLoginException.class)
-    public String handleQrGuesserUserShouldLoginException(QrGuesserUserShouldLoginException ex) {
+    @ExceptionHandler(UserUnauthenticatedException.class)
+    public String handleQrGuesserUserShouldLoginException(UserUnauthenticatedException ex) {
         return "redirect:/backend/auth/authenticate"; // TODO add mapping where was thrown to state
     }
 }

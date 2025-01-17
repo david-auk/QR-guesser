@@ -1,9 +1,9 @@
 package com.springboot.exceptions;
 
-public class QrGuesserUserShouldLoginException extends Exception {
+public class UserUnauthenticatedException extends Exception {
 
     // TODO check best practice, naming exceptions. -> rename
-    public QrGuesserUserShouldLoginException(String errorMessage) {
+    public UserUnauthenticatedException(String errorMessage) {
         super(errorMessage);
     }
 }
