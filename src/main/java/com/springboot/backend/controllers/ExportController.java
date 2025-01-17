@@ -4,7 +4,7 @@ import com.springboot.backend.progress.ProgressService;
 import com.springboot.backend.utils.AccessTokenCookieUtil;
 import com.springboot.backend.utils.AsyncInteractive;
 import com.springboot.backend.utils.RedisInteractive;
-import com.springboot.exceptions.QrGuesserUserShouldLoginException;
+import com.springboot.exceptions.UserUnauthenticatedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -15,7 +15,6 @@ import spotify.AccessToken;
 import spotify.PlaylistScan;
 
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/backend/export")
@@ -25,7 +24,7 @@ public class ExportController {
     private ProgressService progressService;
 
     @GetMapping("/start-scan")
-    public Map<String, String> startScan(HttpServletRequest request) throws QrGuesserUserShouldLoginException {
+    public Map<String, String> startScan(HttpServletRequest request) throws UserUnauthenticatedException {
         AccessToken accessToken = AccessTokenCookieUtil.getVailidAccessToken(request);
 
         RedisInteractive redisInteractive = new RedisInteractive(progressService);
@@ -37,7 +36,6 @@ public class ExportController {
 
         return Map.of("task_id", redisInteractive.getProgressUUID().toString());
     }
-
 
     @Async
     protected void buildScan(AccessToken accessToken, AsyncInteractive asyncInteractive) {

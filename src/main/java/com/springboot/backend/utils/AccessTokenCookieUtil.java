@@ -1,6 +1,6 @@
 package com.springboot.backend.utils;
 
-import com.springboot.exceptions.QrGuesserUserShouldLoginException;
+import com.springboot.exceptions.UserUnauthenticatedException;
 import database.AccessTokenDAO;
 import database.UserDAO;
 import jakarta.servlet.http.Cookie;
@@ -13,8 +13,7 @@ import static com.springboot.constant.GlobalVars.TOKEN_EXPIRATION_DURATION_S;
 import static com.springboot.constant.GlobalVars.TOKEN_ID_COOKIE_NAME;
 
 public class AccessTokenCookieUtil {
-    public static AccessToken getVailidAccessToken(HttpServletRequest request) throws QrGuesserUserShouldLoginException {
-
+    public static AccessToken getVailidAccessToken(HttpServletRequest request) throws UserUnauthenticatedException {
         String accessTokenId = getAccessTokenId(request);
 
         AccessToken accessToken;
@@ -23,7 +22,7 @@ public class AccessTokenCookieUtil {
                 accessToken = accessTokenDAO.get(accessTokenId);
 
                 if (accessToken == null) {
-                    throw new QrGuesserUserShouldLoginException("No record found in DB");
+                    throw new UserUnauthenticatedException("No record found in DB");
                     // This exception can occur if a cookie is older than the delete scheduler option in the DB
                 }
 
@@ -39,10 +38,10 @@ public class AccessTokenCookieUtil {
         return accessToken;
     }
 
-    private static String getAccessTokenId(HttpServletRequest request) throws QrGuesserUserShouldLoginException {
+    private static String getAccessTokenId(HttpServletRequest request) throws UserUnauthenticatedException {
         Cookie accessTokenCookie = WebUtils.getCookie(request, TOKEN_ID_COOKIE_NAME);
         if (accessTokenCookie == null) {
-            throw new QrGuesserUserShouldLoginException("Cookie not found in browser");
+            throw new UserUnauthenticatedException("Cookie not found in browser");
         } else {
             return accessTokenCookie.getValue();
         }
