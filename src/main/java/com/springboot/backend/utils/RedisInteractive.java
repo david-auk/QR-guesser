@@ -29,12 +29,19 @@ public class RedisInteractive implements AsyncInteractive {
 
     @Override
     public void update(String field, Object value) {
-        progress.putInfo(field, value);
+        if (field.equals("progress") && value instanceof Integer) {
+            progress.setPercent((Integer) value);
+        } else if (field.equals("completed") && value instanceof Boolean && ((Boolean) value)) {
+            progress.complete();
+        } else {
+            progress.putInfo(field, value);
+        }
         progressService.updateProgress(progressUUID, progress);
     }
 
     @Override
     public boolean shouldCancel() {
+        // TODO implement
         return false;
     }
 }
