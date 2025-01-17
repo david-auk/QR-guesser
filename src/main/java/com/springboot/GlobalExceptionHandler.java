@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserUnauthenticatedException.class)
-    public String handleQrGuesserUserShouldLoginException(UserUnauthenticatedException ex) {
-        return "redirect:/backend/auth/authenticate"; // TODO add mapping where was thrown to state
+    public String handleUserUnauthenticatedException(UserUnauthenticatedException ex) {
+        return "redirect:/backend/auth/authenticate?next=" + ex.getRedirectUri();
     }
 }

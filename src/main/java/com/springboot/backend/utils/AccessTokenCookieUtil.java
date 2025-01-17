@@ -22,7 +22,7 @@ public class AccessTokenCookieUtil {
                 accessToken = accessTokenDAO.get(accessTokenId);
 
                 if (accessToken == null) {
-                    throw new UserUnauthenticatedException("No record found in DB");
+                    throw new UserUnauthenticatedException("No record found in DB", request);
                     // This exception can occur if a cookie is older than the delete scheduler option in the DB
                 }
 
@@ -41,7 +41,7 @@ public class AccessTokenCookieUtil {
     private static String getAccessTokenId(HttpServletRequest request) throws UserUnauthenticatedException {
         Cookie accessTokenCookie = WebUtils.getCookie(request, TOKEN_ID_COOKIE_NAME);
         if (accessTokenCookie == null) {
-            throw new UserUnauthenticatedException("Cookie not found in browser");
+            throw new UserUnauthenticatedException("Cookie not found in browser", request);
         } else {
             return accessTokenCookie.getValue();
         }
