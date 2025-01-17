@@ -1,17 +1,16 @@
 package database;
 
 import spotify.AccessToken;
-import spotify.User;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AccessTokenDAO extends GenericDAO<AccessToken> {
+public class AccessTokenDAO extends GenericDAO<AccessToken, String> {
     private final UserDAO userDAO;
 
     public AccessTokenDAO(UserDAO userDAO) {
-        super("access_token");
+        super("access_token", "id", String.class);
 
         this.userDAO = userDAO;
     }
@@ -36,8 +35,7 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
                 preparedStatement.executeUpdate();
 
             } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-                e.printStackTrace();
+                throw new RuntimeException(e.getMessage());
             }
         }
     }
@@ -61,8 +59,7 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
                 throw new IllegalArgumentException("No AccessToken found with ID: " + accessToken.getId());
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -89,8 +86,7 @@ public class AccessTokenDAO extends GenericDAO<AccessToken> {
             }
 
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
 
         return accessToken;

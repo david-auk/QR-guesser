@@ -4,10 +4,10 @@ import spotify.User;
 
 import java.sql.*;
 
-public class UserDAO extends GenericDAO<User> {
+public class UserDAO extends GenericDAO<User, String> {
 
     public UserDAO() {
-        super("user");
+        super("user", "id", String.class);
     }
 
     @Override

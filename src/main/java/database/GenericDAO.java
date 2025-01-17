@@ -4,15 +4,19 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
+public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
 
     protected final Connection connection;
-    protected final String tableName;
+    private final String tableName;
+    private final String primaryKeyColumnName;
+    private final Class<K> primaryKeyDataType;
 
     // Constructor to enforce initialization
-    protected GenericDAO(String tableName) {
+    protected GenericDAO(String tableName, String primaryKeyColumnName, Class<K> primaryKeyDataType) {
         this.connection = Database.getConnection();
         this.tableName = tableName;
+        this.primaryKeyColumnName = primaryKeyColumnName;
+        this.primaryKeyDataType = primaryKeyDataType;
     }
 
     @Override
@@ -22,26 +26,25 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
     }
 
     @Override
-    public void delete(String id) {
-        String query = "DELETE FROM %s WHERE id = ?";
-        query = String.format(query, tableName);
+    public void delete(K primaryKey) {
+        String query = "DELETE FROM %s WHERE %s = ?";
+        query = String.format(query, tableName, primaryKeyColumnName);
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
 
-            preparedStatement.setString(1, id);
+            preparedStatement.setObject(1, primaryKey);
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
     public T getLatest() {
-        String query = "SELECT ID FROM %s ORDER BY ID DESC LIMIT 1";
-        query = String.format(query, tableName);
+        String query = "SELECT %s FROM %s ORDER BY %s DESC LIMIT 1";
+        query = String.format(query, primaryKeyColumnName, tableName, primaryKeyColumnName);
 
         T entity = null;
 
@@ -49,11 +52,10 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-                entity = get(resultSet.getString("id"));
+                entity = get(resultSet.getObject(primaryKeyColumnName, primaryKeyDataType));
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
 
         return entity;
@@ -61,20 +63,19 @@ public abstract class GenericDAO<T> implements GenericDAOInterface<T> {
 
     @Override
     public List<T> getAll() {
-        String query = "SELECT ID FROM %s";
-        query = String.format(query, tableName);
+        String query = "SELECT %s FROM %s";
+        query = String.format(query, primaryKeyColumnName, tableName);
         List<T> entities = new ArrayList<>();
 
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
             while (resultSet.next()) {
-                T entity = get(resultSet.getString("ID"));
+                T entity = get(resultSet.getObject(primaryKeyColumnName, primaryKeyDataType));
                 entities.add(entity);
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
 
         return entities;
