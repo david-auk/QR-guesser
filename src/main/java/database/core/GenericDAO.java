@@ -7,16 +7,21 @@ import java.util.List;
 public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K>, PreparedStatementInterface<T, K> {
 
     protected final Connection connection;
-    private final String tableName;
-    private final String primaryKeyColumnName;
-    private final Class<K> primaryKeyDataType;
+    protected final String tableName;
+    protected final String primaryKeyColumnName;
+    protected final Class<K> primaryKeyDataType;
+
+    private final String addQuery;
+    private final String updateQuery;
 
     // Constructor to enforce initialization
-    protected GenericDAO(String tableName, String primaryKeyColumnName, Class<K> primaryKeyDataType) {
+    protected GenericDAO(String tableName, String primaryKeyColumnName, Class<K> primaryKeyDataType, String addQuery, String updateQuery) {
         this.connection = Database.getConnection();
         this.tableName = tableName;
         this.primaryKeyColumnName = primaryKeyColumnName;
         this.primaryKeyDataType = primaryKeyDataType;
+        this.addQuery = addQuery;
+        this.updateQuery = updateQuery;
     }
 
     @Override
@@ -31,7 +36,8 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K>, Pre
     @Override
     public void add(T entity) {
         try {
-            PreparedStatement addStatement = prepareAddStatement(entity);
+            PreparedStatement addStatement = connection.prepareStatement(addQuery);
+            prepareAddStatement(addStatement, entity);
             addStatement.executeUpdate();
         } catch (SQLException e){
             throw new RuntimeException(e);
@@ -42,10 +48,11 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K>, Pre
     public T create(T entity) {
         K primaryKey;
         try {
-            PreparedStatement addStatement = prepareAddStatement(entity);
+            PreparedStatement addStatement = connection.prepareStatement(addQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+            prepareAddStatement(addStatement, entity);
             addStatement.executeUpdate();
 
-            // Get generated key (ID)
+            // Get generated key
             try (ResultSet generatedKeys = addStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     primaryKey = generatedKeys.getObject(1, primaryKeyDataType);
@@ -67,7 +74,8 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K>, Pre
     @Override
     public void update(T entity) {
         try {
-            PreparedStatement updateStatement = prepareUpdateStatement(entity);
+            PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+            prepareUpdateStatement(updateStatement, entity);
             updateStatement.executeUpdate();
             int rowsAffected = updateStatement.executeUpdate();
             if (rowsAffected == 0) {
@@ -118,19 +126,23 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K>, Pre
     public List<T> getAll() {
         String query = "SELECT %s FROM %s";
         query = String.format(query, primaryKeyColumnName, tableName);
-        List<T> entities = new ArrayList<>();
-
+        List<T> entities;
         try {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
-            while (resultSet.next()) {
-                T entity = get(resultSet.getObject(primaryKeyColumnName, primaryKeyDataType));
-                entities.add(entity);
-            }
+            entities = getEntities(statement.executeQuery(query));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
+        return entities;
+    }
+
+    protected List<T> getEntities(ResultSet resultSet) throws SQLException {
+        List<T> entities = new ArrayList<>();
+        while (resultSet.next()) {
+            T entity = get(resultSet.getObject(primaryKeyColumnName, primaryKeyDataType));
+            entities.add(entity);
+        }
         return entities;
     }
 

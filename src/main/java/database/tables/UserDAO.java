@@ -8,30 +8,24 @@ import java.sql.*;
 public class UserDAO extends GenericDAO<User, String> {
 
     public UserDAO() {
-        super("user", "id", String.class);
+        super("user", "id", String.class,
+                "INSERT INTO user (id, name, profile_picture_image_url) VALUES (?, ?, ?)",
+                "UPDATE user SET name = ?, profile_picture_image_url = ? WHERE id = ?"
+        );
     }
 
     @Override
-    public PreparedStatement prepareAddStatement(User user) throws SQLException {
-        String query = "INSERT INTO user (id, name, profile_picture_image_url) VALUES (?, ?, ?)";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, user.id());
-        preparedStatement.setString(2, user.name());
-        preparedStatement.setString(3, user.profilePictureImageUrl());
-        return preparedStatement;
+    public void prepareAddStatement(PreparedStatement unPreparedStatement, User user) throws SQLException {
+        unPreparedStatement.setString(1, user.id());
+        unPreparedStatement.setString(2, user.name());
+        unPreparedStatement.setString(3, user.profilePictureImageUrl());
     }
 
     @Override
-    public PreparedStatement prepareUpdateStatement(User user) throws SQLException {
-        String query = "UPDATE user SET name = ?, profile_picture_image_url = ? WHERE id = ?";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, user.name());
-        preparedStatement.setString(2, user.profilePictureImageUrl());
-        preparedStatement.setString(3, user.id());
-
-        return preparedStatement;
+    public void prepareUpdateStatement(PreparedStatement unPreparedStatement, User user) throws SQLException {
+        unPreparedStatement.setString(1, user.name());
+        unPreparedStatement.setString(2, user.profilePictureImageUrl());
+        unPreparedStatement.setString(3, user.id());
     }
 
     @Override

@@ -9,27 +9,22 @@ import java.sql.SQLException;
 
 public class ArtistDAO extends GenericDAO<Artist, String> {
     protected ArtistDAO() {
-        super("artist", "id", String.class);
+        super("artist", "id", String.class,
+                "INSERT INTO artist (id, name) VALUES (?, ?)",
+                "UPDATE artist SET name = ? WHERE id = ?"
+        );
     }
 
     @Override
-    public PreparedStatement prepareAddStatement(Artist artist) throws SQLException {
-        String query = "INSERT INTO artist (id, name) VALUES (?, ?)";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, artist.id());
-        preparedStatement.setString(2, artist.name());
-        return preparedStatement;
+    public void prepareAddStatement(PreparedStatement unPreparedStatement,Artist artist) throws SQLException {
+        unPreparedStatement.setString(1, artist.id());
+        unPreparedStatement.setString(2, artist.name());
     }
 
     @Override
-    public PreparedStatement prepareUpdateStatement(Artist artist) throws SQLException {
-        String query = "UPDATE artist SET name = ? WHERE id = ?";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, artist.name());
-        preparedStatement.setString(2, artist.id());
-        return preparedStatement;
+    public void prepareUpdateStatement(PreparedStatement unPreparedStatement, Artist artist) throws SQLException {
+        unPreparedStatement.setString(1, artist.name());
+        unPreparedStatement.setString(2, artist.id());
     }
 
     @Override

@@ -9,29 +9,24 @@ import java.sql.SQLException;
 public class AlbumDAO extends GenericDAO<Album, String> {
 
     protected AlbumDAO() {
-        super("album", "id", String.class);
+        super("album", "id", String.class,
+                "INSERT INTO album (id, name, release_year) VALUES (?, ?, ?)",
+                "UPDATE album SET name = ?, release_year = ? WHERE id = ?"
+        );
     }
 
     @Override
-    public PreparedStatement prepareAddStatement(Album album) throws SQLException {
-        String query = "INSERT INTO album (id, name, release_year) VALUES (?, ?, ?)";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, album.id());
-        preparedStatement.setString(2, album.name());
-        preparedStatement.setInt(3, album.releaseYear());
-        return preparedStatement;
+    public void prepareAddStatement(PreparedStatement unPreparedStatement, Album album) throws SQLException {
+        unPreparedStatement.setString(1, album.id());
+        unPreparedStatement.setString(2, album.name());
+        unPreparedStatement.setInt(3, album.releaseYear());
     }
 
     @Override
-    public PreparedStatement prepareUpdateStatement(Album album) throws SQLException {
-        String query = "UPDATE user SET name = ?, profile_picture_image_url = ? WHERE id = ?";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, album.name());
-        preparedStatement.setInt(2, album.releaseYear());
-        preparedStatement.setString(3, album.id());
-        return preparedStatement;
+    public void prepareUpdateStatement(PreparedStatement unPreparedStatement, Album album) throws SQLException {
+        unPreparedStatement.setString(1, album.name());
+        unPreparedStatement.setInt(2, album.releaseYear());
+        unPreparedStatement.setString(3, album.id());
     }
 
     @Override

@@ -12,7 +12,9 @@ public class AccessTokenDAO extends GenericDAO<AccessToken, String> {
     private final UserDAO userDAO;
 
     public AccessTokenDAO(UserDAO userDAO) {
-        super("access_token", "id", String.class);
+        super("access_token", "id", String.class,
+                "INSERT INTO access_token (id, access_token, refresh_token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
+        "UPDATE access_token SET access_token = ?, refresh_token = ?, expires_at = ? WHERE id = ?");
 
         this.userDAO = userDAO;
     }
@@ -28,31 +30,21 @@ public class AccessTokenDAO extends GenericDAO<AccessToken, String> {
     }
 
     @Override
-    public PreparedStatement prepareAddStatement(AccessToken accessToken) throws SQLException {
-        String query = "INSERT INTO access_token (id, access_token, refresh_token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)";
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-
-        // Set the values
-        preparedStatement.setString(1, accessToken.getId());
-        preparedStatement.setString(2, accessToken.getAccessToken());
-        preparedStatement.setString(3, accessToken.getRefreshToken());
-        preparedStatement.setString(4, accessToken.getUser().id());
-        preparedStatement.setTimestamp(5, accessToken.getCreatedAt());
-        preparedStatement.setTimestamp(6, accessToken.getExpiresAt());
-        return preparedStatement;
+    public void prepareAddStatement(PreparedStatement unPreparedStatement, AccessToken accessToken) throws SQLException {
+        unPreparedStatement.setString(1, accessToken.getId());
+        unPreparedStatement.setString(2, accessToken.getAccessToken());
+        unPreparedStatement.setString(3, accessToken.getRefreshToken());
+        unPreparedStatement.setString(4, accessToken.getUser().id());
+        unPreparedStatement.setTimestamp(5, accessToken.getCreatedAt());
+        unPreparedStatement.setTimestamp(6, accessToken.getExpiresAt());
     }
 
     @Override
-    public PreparedStatement prepareUpdateStatement(AccessToken accessToken) throws SQLException {
-        String query = "UPDATE access_token SET access_token = ?, refresh_token = ?, expires_at = ? WHERE id = ?";
-
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setString(1, accessToken.getAccessToken());
-        preparedStatement.setString(2, accessToken.getRefreshToken());
-        preparedStatement.setTimestamp(3, accessToken.getExpiresAt());
-        preparedStatement.setString(4, accessToken.getId());
-
-        return preparedStatement;
+    public void prepareUpdateStatement(PreparedStatement unPreparedStatement, AccessToken accessToken) throws SQLException {
+        unPreparedStatement.setString(1, accessToken.getAccessToken());
+        unPreparedStatement.setString(2, accessToken.getRefreshToken());
+        unPreparedStatement.setTimestamp(3, accessToken.getExpiresAt());
+        unPreparedStatement.setString(4, accessToken.getId());
     }
 
     @Override
