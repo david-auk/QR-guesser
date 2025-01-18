@@ -1,15 +1,14 @@
 package database.tables;
 
-import database.core.GenericDAO;
 import spotify.Playlist;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PlaylistDAO extends GenericDAO<Playlist, String> {
+public class PlaylistTable extends Table<Playlist, String> {
 
-    protected PlaylistDAO() {
+    public PlaylistTable() {
         super("playlist", "id", String.class,
                 "INSERT INTO playlist (id, title, cover_image_url) VALUES (?, ?, ?)",
                 "UPDATE playlist SET title = ?, cover_image_url = ? WHERE id = ?"

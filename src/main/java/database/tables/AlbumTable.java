@@ -1,14 +1,13 @@
 package database.tables;
 
-import database.core.GenericDAO;
 import spotify.Album;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AlbumDAO extends GenericDAO<Album, String> {
+public class AlbumTable extends Table<Album, String> {
 
-    protected AlbumDAO() {
+    public AlbumTable() {
         super("album", "id", String.class,
                 "INSERT INTO album (id, name, release_year) VALUES (?, ?, ?)",
                 "UPDATE album SET name = ?, release_year = ? WHERE id = ?"

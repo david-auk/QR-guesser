@@ -5,8 +5,10 @@ import com.springboot.constant.Template;
 import static com.springboot.constant.GlobalVars.*;
 
 // Import springboot classes
-import database.tables.AccessTokenDAO;
-import database.tables.UserDAO;
+import database.dao.AccessTokenDAO;
+import database.dao.UserDAO;
+import database.tables.AccessTokenTable;
+import database.tables.UserTable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

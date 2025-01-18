@@ -1,13 +1,12 @@
 package database.tables;
 
-import database.core.GenericDAO;
 import spotify.User;
 
 import java.sql.*;
 
-public class UserDAO extends GenericDAO<User, String> {
+public class UserTable extends Table<User, String> {
 
-    public UserDAO() {
+    public UserTable() {
         super("user", "id", String.class,
                 "INSERT INTO user (id, name, profile_picture_image_url) VALUES (?, ?, ?)",
                 "UPDATE user SET name = ?, profile_picture_image_url = ? WHERE id = ?"
