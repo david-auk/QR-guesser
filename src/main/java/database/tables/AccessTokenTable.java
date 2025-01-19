@@ -1,8 +1,8 @@
 package database.tables;
 
+import database.core.TimestampedTable;
 import database.dao.UserDAO;
 import spotify.AccessToken;
-import spotify.User;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

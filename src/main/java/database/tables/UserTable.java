@@ -1,5 +1,6 @@
 package database.tables;
 
+import database.core.Table;
 import spotify.User;
 
 import java.sql.*;

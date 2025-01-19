@@ -1,4 +1,4 @@
-package database.tables;
+package database.core;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

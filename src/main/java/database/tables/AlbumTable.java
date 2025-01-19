@@ -1,5 +1,6 @@
 package database.tables;
 
+import database.core.Table;
 import spotify.Album;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

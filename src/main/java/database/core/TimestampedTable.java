@@ -1,4 +1,4 @@
-package database.tables;
+package database.core;
 
 public abstract class TimestampedTable<T, K> extends Table<T, K> {
     protected final String timestampColumnName;

@@ -1,4 +1,4 @@
-package database.tables;
+package database.core;
 
 public abstract class Table<T, K> implements TableInterface<T, K> {
     protected final String tableName;

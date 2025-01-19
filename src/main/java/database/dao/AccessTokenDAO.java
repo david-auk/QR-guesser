@@ -1,11 +1,11 @@
 package database.dao;
 
-import database.core.GenericTimestampedDAO;
+import database.core.TimestampedDAO;
 import database.tables.AccessTokenTable;
 import spotify.AccessToken;
 import spotify.User;
 
-public class AccessTokenDAO extends GenericTimestampedDAO<AccessToken, String> {
+public class AccessTokenDAO extends TimestampedDAO<AccessToken, String> {
 
     private final UserDAO userDAO;
 

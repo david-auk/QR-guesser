@@ -1,8 +1,5 @@
 package database.core;
 
-import database.tables.Table;
-import database.tables.TableInterface;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -131,10 +128,16 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
         return entities;
     }
 
+    /**
+     * Helper method to convert a resultSet (list) into an entity list
+     * @param resultSet A resultSet from a wildcard query, so it can be built using the  buildFromTableWildcardQuery
+     * @return A list of entities representing the query results
+     * @throws SQLException Exception that is meant to be caught by implementing methods
+     */
     protected List<T> getEntities(ResultSet resultSet) throws SQLException {
         List<T> entities = new ArrayList<>();
         while (resultSet.next()) {
-            T entity = get(resultSet.getObject(table.getPrimaryKeyColumnName(), table.getPrimaryKeyDataType()));
+            T entity = table.buildFromTableWildcardQuery(resultSet);
             entities.add(entity);
         }
         return entities;

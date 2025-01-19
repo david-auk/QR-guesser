@@ -1,16 +1,14 @@
 package database.core;
 
-import database.tables.TimestampedTable;
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-public abstract class GenericTimestampedDAO<T, K> extends GenericDAO<T, K> {
+public abstract class TimestampedDAO<T, K> extends GenericDAO<T, K> implements TimestampedDAOInterface<T, K> {
 
     private final TimestampedTable<T, K> table;
 
-    protected GenericTimestampedDAO(TimestampedTable<T, K> table) {
+    protected TimestampedDAO(TimestampedTable<T, K> table) {
         super(table);
         this.table = table;
     }
@@ -18,13 +16,13 @@ public abstract class GenericTimestampedDAO<T, K> extends GenericDAO<T, K> {
     public List<T> getOrdered(Integer maxRecords, boolean ascending){
         String query = "SELECT %s FROM %s ORDER BY %s %s LIMIT ?";
         query = String.format(query, table.getPrimaryKeyColumnName(), table.getTableName(), table.getTimestampColumnName(), ascending ? "DESC" : "ASC");
-        List<T> entities = null;
+        List<T> entities;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
             preparedStatement.setInt(1, maxRecords);
             entities = getEntities(preparedStatement.executeQuery());
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return entities;
