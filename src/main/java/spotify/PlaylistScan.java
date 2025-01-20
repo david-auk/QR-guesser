@@ -57,11 +57,15 @@ public class PlaylistScan {
     }
 
     public List<PlaylistScanTrack> getPlaylistScanTracks() {
+        return playlistScanTracks;
+    }
+
+    public List<PlaylistScanTrack> getAllPlaylistScanTracks() {
         if (extendsPlaylistScan == null){
             return playlistScanTracks;
         } else {
             // Join the previous list recursively for the returning of all previous playlistScanTracks
-            return Stream.concat(extendsPlaylistScan.getPlaylistScanTracks().stream(), playlistScanTracks.stream()).toList();
+            return Stream.concat(extendsPlaylistScan.getAllPlaylistScanTracks().stream(), playlistScanTracks.stream()).toList();
         }
     }
 

@@ -59,7 +59,20 @@ public class PlaylistScanDAO extends TimestampedDAO<PlaylistScan, String> {
         for (PlaylistScanTrack playlistScanTrack : playlistScan.getPlaylistScanTracks()) {
             playlistScanTrackDAO.add(playlistScanTrack);
         }
+
+        // Add instance itself
         super.add(playlistScan);
+    }
+
+    @Override
+    public void update(PlaylistScan playlistScan) {
+        // Update all child tracks
+        for (PlaylistScanTrack playlistScanTrack : playlistScan.getPlaylistScanTracks()) {
+            playlistScanTrackDAO.update(playlistScanTrack);
+        }
+
+        // Update record itself
+        super.update(playlistScan);
     }
 
     @Override
