@@ -1,7 +1,5 @@
 package database.core;
 
-import database.tables.PlaylistScanTable;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,22 +25,28 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
     }
 
     @Override
-    public boolean exists(T entity) {
-        if (entity == null){
-            return false;
-        }
-        K primaryKey = table.getPrimaryKey(entity);
+    public boolean existsByPrimaryKey(K primaryKey) {
         return primaryKey != null && get(primaryKey) != null;
     }
 
     @Override
+    public boolean exists(T entity) {
+        if (entity == null){
+            return false;
+        }
+        return existsByPrimaryKey(table.getPrimaryKey(entity));
+    }
+
+    @Override
     public void add(T entity) {
-        try {
-            PreparedStatement addStatement = connection.prepareStatement(table.getAddQuery());
-            table.prepareAddStatement(addStatement, entity);
-            addStatement.executeUpdate();
-        } catch (SQLException e){
-            throw new RuntimeException(e);
+        if (!exists(entity)){
+            try {
+                PreparedStatement addStatement = connection.prepareStatement(table.getAddQuery());
+                table.prepareAddStatement(addStatement, entity);
+                addStatement.executeUpdate();
+            } catch (SQLException e){
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -75,6 +79,9 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
 
     @Override
     public void update(T entity) {
+        if (!exists(entity)){
+            throw new RuntimeException("Entity does not exist.");
+        }
         try {
             PreparedStatement updateStatement = connection.prepareStatement(table.getUpdateQuery());
             table.prepareUpdateStatement(updateStatement, entity);
@@ -110,6 +117,10 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
 
     @Override
     public void delete(K primaryKey) {
+        if (!existsByPrimaryKey(primaryKey)) {
+            throw new RuntimeException("Record does not exist.");
+        }
+
         String query = "DELETE FROM %s WHERE %s = ?";
         query = String.format(query, table.getTableName(), table.getPrimaryKeyColumnName());
 

@@ -12,13 +12,18 @@ import java.sql.SQLException;
 public class TrackDAO extends GenericDAO<Track, String> {
 
     private final AlbumDAO albumDAO;
+    private final ArtistDAO artistDAO;
 
-    public TrackDAO(AlbumDAO albumDAO) {
+    public TrackDAO(AlbumDAO albumDAO, ArtistDAO artistDAO) {
         super(new TrackTable());
         this.albumDAO = albumDAO;
+        this.artistDAO = artistDAO;
     }
 
     private void addArtistToTrack(Artist artist, Track track) {
+        // Add the artist if not exists
+        artistDAO.add(artist);
+
         String query = "INSERT INTO artist_track (artist_id, track_id) VALUES (?, ?)";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -38,13 +43,23 @@ public class TrackDAO extends GenericDAO<Track, String> {
         }
 
         // Add the actual track
-        if (!exists(track)){
-            super.add(track);
+        super.add(track);
 
-            // Add the associated artists to the database
-            for (Artist artist : track.artists()) {
-                addArtistToTrack(artist, track);
-            }
+        // Add the associated artists to the database
+        for (Artist artist : track.artists()) {
+            addArtistToTrack(artist, track);
         }
+    }
+
+    @Override
+    public void update(Track track) {
+        // Update the associated album
+        albumDAO.update(track.album());
+
+        // Update the associated artists
+        for (Artist artist : track.artists()) {
+            artistDAO.update(artist);
+        }
+        super.update(track);
     }
 }

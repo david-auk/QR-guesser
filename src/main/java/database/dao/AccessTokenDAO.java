@@ -14,13 +14,15 @@ public class AccessTokenDAO extends TimestampedDAO<AccessToken, String> {
         this.userDAO = userDAO;
     }
 
-    // Handle user does not exist yet
     @Override
     public void add(AccessToken accessToken) {
-        User user = accessToken.getUser();
-        if (!userDAO.exists(user)) {
-            userDAO.add(user);
-        }
+        userDAO.add(accessToken.getUser());
         super.add(accessToken);
+    }
+
+    @Override
+    public void update(AccessToken accessToken) {
+        userDAO.update(accessToken.getUser());
+        super.update(accessToken);
     }
 }

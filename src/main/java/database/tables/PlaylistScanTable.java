@@ -20,18 +20,20 @@ public class PlaylistScanTable extends TimestampedTable<PlaylistScan, String> {
 
     public PlaylistScanTable(PlaylistScanDAO playlistScanDAO, PlaylistDAO playlistDAO, PlaylistScanTrackDAO playlistScanTrackDAO, UserDAO userDAO) {
         super("playlist_scan", "id", String.class, "timestamp",
-                "",
-                ""
+                "INSERT INTO playlist_scan (id, playlist_id, requested_by_user_id, export_completed, extends_playlist_scan, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+                "UPDATE playlist_scan SET playlist_id = ?, requested_by_user_id = ?, export_completed = ?, extends_playlist_scan = ? WHERE id = ?"
         );
         this.playlistScanDAO = playlistScanDAO;
         this.playlistDAO = playlistDAO;
         this.playlistScanTrackDAO = playlistScanTrackDAO;
         this.userDAO = userDAO;
+
+
     }
 
     @Override
     public void prepareAddStatement(PreparedStatement unPreparedStatement, PlaylistScan playlistScan) throws SQLException {
-
+        unPreparedStatement.setString(1, playlistScan.getId());
     }
 
     @Override

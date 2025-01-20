@@ -34,10 +34,8 @@ public class PlaylistScanTrackDAO extends GenericDAO<PlaylistScanTrack, String> 
     @Override
     public void add(PlaylistScanTrack playlistScanTrack) {
 
-        // Add the track if it does not already exist
-        if (!trackDAO.exists(playlistScanTrack.track())){
-            trackDAO.add(playlistScanTrack.track());
-        }
+        // Add the track
+        trackDAO.add(playlistScanTrack.track());
 
         // Add the actual playlistScanTrack
         super.add(playlistScanTrack);

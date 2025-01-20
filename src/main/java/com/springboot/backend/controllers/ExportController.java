@@ -11,10 +11,7 @@ import database.dao.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spotify.AccessToken;
 import spotify.Playlist;
 import spotify.PlaylistScan;
@@ -28,16 +25,17 @@ public class ExportController {
     @Autowired
     private ProgressService progressService;
 
-    @GetMapping("/start-scan")
+    @PostMapping("/start-scan")
     public Map<String, String> startScan(HttpServletRequest request, @RequestBody Map<String, ?> requestBodyMap) throws UserUnauthenticatedException, JsonErrorResponseException {
         AccessToken accessToken = AccessTokenCookieUtil.getVailidAccessToken(request);
         RequestBodyUtil requestBodyUtil = new RequestBodyUtil(requestBodyMap);
-        RedisInteractive redisInteractive = new RedisInteractive(progressService);
 
         // Get the playlist_id
         String id = requestBodyUtil.getField("playlist_id", String.class);
         String title = requestBodyUtil.getField("playlist_title", String.class);
         String imageUrl = requestBodyUtil.getField("playlist_cover_image_url", String.class);
+
+        RedisInteractive redisInteractive = new RedisInteractive(progressService);
 
         // Get the playlist object
         Playlist playlist = new Playlist(id, title, imageUrl);
@@ -57,13 +55,15 @@ public class ExportController {
         // Populate the playlistScan track list with API
         playlistScan.scan(accessToken, asyncInteractive);
 
-        // Add to database
-        try (PlaylistDAO playlistDAO = new PlaylistDAO()){
-            try (UserDAO userDAO = new UserDAO()){
-                try (AlbumDAO albumDAO = new AlbumDAO()){
-                    try (TrackDAO trackDAO = new TrackDAO(albumDAO)){
-                        try (PlaylistScanDAO playlistScanDAO = new PlaylistScanDAO(playlistDAO, userDAO, trackDAO)){
-                            playlistScanDAO.add(playlistScan);
+        // Add Scraped info to the database
+        try (AlbumDAO albumDAO = new AlbumDAO()){
+            try (ArtistDAO artistDAO = new ArtistDAO()){
+                try (TrackDAO trackDAO = new TrackDAO(albumDAO, artistDAO)){
+                    try (PlaylistDAO playlistDAO = new PlaylistDAO()){
+                        try (UserDAO userDAO = new UserDAO()){
+                            try (PlaylistScanDAO playlistScanDAO = new PlaylistScanDAO(playlistDAO, userDAO, trackDAO)){
+                                playlistScanDAO.add(playlistScan);
+                            }
                         }
                     }
                 }
