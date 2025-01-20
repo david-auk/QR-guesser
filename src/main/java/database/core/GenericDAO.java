@@ -24,8 +24,7 @@ public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
         this.table = table;
     }
 
-    @Override
-    public boolean existsByPrimaryKey(K primaryKey) {
+    protected boolean existsByPrimaryKey(K primaryKey) {
         return primaryKey != null && get(primaryKey) != null;
     }
 
