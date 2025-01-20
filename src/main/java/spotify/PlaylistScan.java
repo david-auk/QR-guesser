@@ -19,17 +19,17 @@ public class PlaylistScan {
 
     String id;
     Playlist playlist;
-    List<PlaylistScanTrack> tracks;
+    List<PlaylistScanTrack> playlistScanTracks;
     User requestedByUser;
     boolean exportComplete;
     Timestamp timestamp;
     PlaylistScan extendsPlaylistScan;
 
     // For the DAO
-    public PlaylistScan(String id, Playlist playlist, List<PlaylistScanTrack> tracks, User requestedByUser, boolean exportComplete, PlaylistScan extendsPlaylistScan, Timestamp timestamp) {
+    public PlaylistScan(String id, Playlist playlist, List<PlaylistScanTrack> playlistScanTrack, User requestedByUser, boolean exportComplete, PlaylistScan extendsPlaylistScan, Timestamp timestamp) {
         this.id = id;
         this.playlist = playlist;
-        this.tracks = tracks;
+        this.playlistScanTracks = playlistScanTrack;
         this.requestedByUser = requestedByUser;
         this.exportComplete = exportComplete;
         this.timestamp = timestamp;
@@ -40,7 +40,7 @@ public class PlaylistScan {
     public PlaylistScan(Playlist playlist, User requestedByUser, PlaylistScan extendsPlaylistScan) {
         this.id = UUID.randomUUID().toString();
         this.playlist = playlist;
-        this.tracks = Collections.emptyList();
+        this.playlistScanTracks = Collections.emptyList();
         this.requestedByUser = requestedByUser;
         this.exportComplete = false;
         this.timestamp = new Timestamp(System.currentTimeMillis());
@@ -56,12 +56,12 @@ public class PlaylistScan {
         return playlist;
     }
 
-    public List<PlaylistScanTrack> getTracks() {
+    public List<PlaylistScanTrack> getPlaylistScanTracks() {
         if (extendsPlaylistScan == null){
-            return tracks;
+            return playlistScanTracks;
         } else {
-            // Join the previous list recursively for the returning of all previous tracks
-            return Stream.concat(extendsPlaylistScan.getTracks().stream(), tracks.stream()).toList();
+            // Join the previous list recursively for the returning of all previous playlistScanTracks
+            return Stream.concat(extendsPlaylistScan.getPlaylistScanTracks().stream(), playlistScanTracks.stream()).toList();
         }
     }
 
@@ -102,8 +102,8 @@ public class PlaylistScan {
                 data.getJSONArray("images").getJSONObject(0).getString("url")
         );
 
-        //List<Map<String, Object>> tracks = new ArrayList<>();
-        JSONObject tracksData = data.getJSONObject("tracks");
+        //List<Map<String, Object>> playlistScanTracks = new ArrayList<>();
+        JSONObject tracksData = data.getJSONObject("playlistScanTracks");
 
         String nextUrl = tracksData.optString("next", null);
 
@@ -151,7 +151,7 @@ public class PlaylistScan {
 
                 // Add track to the trackList
                 String playlistScanTrackId = UUID.randomUUID().toString();
-                tracks.add(new PlaylistScanTrack(playlistScanTrackId, this, track, i, addedAt));
+                playlistScanTracks.add(new PlaylistScanTrack(playlistScanTrackId, this, track, i, addedAt));
 
             }
 
@@ -183,8 +183,8 @@ public class PlaylistScan {
             params.put("fields", "items(added_at,track(is_local,added_at,id,name,images,artists(name,id),album(id,name,release_date))),next");
         } else {
             fields = "id,name,images," +
-                    "tracks.items(added_at,track(is_local,id,name,images,artists(name,id),album(id,name,release_date)))," +
-                    "tracks.next";
+                    "playlistScanTracks.items(added_at,track(is_local,id,name,images,artists(name,id),album(id,name,release_date)))," +
+                    "playlistScanTracks.next";
 
             params = Map.of("fields", fields);
         }

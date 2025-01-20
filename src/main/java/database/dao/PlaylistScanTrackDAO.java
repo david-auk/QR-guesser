@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class PlaylistScanTrackDAO extends GenericDAO<PlaylistScanTrack, String> {
+
     public PlaylistScanTrackDAO(PlaylistScanDAO playlistScanDAO, TrackDAO trackDAO) {
         super(new PlaylistScanTrackTable(playlistScanDAO, trackDAO));
     }

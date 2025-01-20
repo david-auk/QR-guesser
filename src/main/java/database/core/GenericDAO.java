@@ -1,5 +1,7 @@
 package database.core;
 
+import database.tables.PlaylistScanTable;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,12 +9,21 @@ import java.util.List;
 public abstract class GenericDAO<T, K> implements GenericDAOInterface<T, K> {
 
     protected final Connection connection;
-    private final Table<T, K> table;
+    private Table<T, K> table;
 
     // Constructor to enforce initialization
     protected GenericDAO(Table<T, K> table) {
         this.table = table;
         this.connection = Database.getConnection();
+    }
+
+    /**
+     * Updates the private table object.
+     * Handy for if you need to reference "this" in the creation of the table object (which needs to be done after the super type constructor)
+     * @param table Table instance to update the private DAO table instance with
+     */
+    protected void setTable(Table<T, K> table) {
+        this.table = table;
     }
 
     @Override

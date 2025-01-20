@@ -5,7 +5,7 @@ import database.tables.TrackTable;
 import spotify.Track;
 
 public class TrackDAO extends GenericDAO<Track, String> {
-    protected TrackDAO() {
+    public TrackDAO() {
         super(new TrackTable());
     }
 }
