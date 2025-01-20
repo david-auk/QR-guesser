@@ -13,26 +13,40 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PlaylistScan {
 
     String id;
     Playlist playlist;
-    List<Map<String, Object>> tracks;
+    List<PlaylistScanTrack> playlistScanTracks;
     User requestedByUser;
     boolean exportComplete;
     Timestamp timestamp;
     PlaylistScan extendsPlaylistScan;
 
-    public PlaylistScan(String id, Playlist playlist, List<Map<String, Object>> tracks, User requestedByUser, boolean exportComplete, Timestamp timestamp, PlaylistScan extendsPlaylistScan) {
+    // For the DAO
+    public PlaylistScan(String id, Playlist playlist, List<PlaylistScanTrack> playlistScanTrack, User requestedByUser, boolean exportComplete, PlaylistScan extendsPlaylistScan, Timestamp timestamp) {
         this.id = id;
         this.playlist = playlist;
-        this.tracks = tracks;
+        this.playlistScanTracks = playlistScanTrack;
         this.requestedByUser = requestedByUser;
         this.exportComplete = exportComplete;
         this.timestamp = timestamp;
         this.extendsPlaylistScan = extendsPlaylistScan;
     }
+
+    // For the User
+    public PlaylistScan(Playlist playlist, User requestedByUser, PlaylistScan extendsPlaylistScan) {
+        this.id = UUID.randomUUID().toString();
+        this.playlist = playlist;
+        this.playlistScanTracks = Collections.emptyList();
+        this.requestedByUser = requestedByUser;
+        this.exportComplete = false;
+        this.timestamp = new Timestamp(System.currentTimeMillis());
+        this.extendsPlaylistScan = extendsPlaylistScan;
+    }
+
 
     public String getId() {
         return id;
@@ -42,8 +56,13 @@ public class PlaylistScan {
         return playlist;
     }
 
-    public List<Map<String, Object>> getTracks() {
-        return tracks;
+    public List<PlaylistScanTrack> getPlaylistScanTracks() {
+        if (extendsPlaylistScan == null){
+            return playlistScanTracks;
+        } else {
+            // Join the previous list recursively for the returning of all previous playlistScanTracks
+            return Stream.concat(extendsPlaylistScan.getPlaylistScanTracks().stream(), playlistScanTracks.stream()).toList();
+        }
     }
 
     public User getRequestedByUser() {
@@ -62,8 +81,8 @@ public class PlaylistScan {
         return extendsPlaylistScan;
     }
 
-    public static PlaylistScan buildFromApi(String playlistId, AccessToken accessToken, AsyncInteractive asyncInteractive) {
-        String apiUrl = "https://api.spotify.com/v1/playlists/" + playlistId;
+    public void scan(AccessToken accessToken, AsyncInteractive asyncInteractive) {
+        String apiUrl = "https://api.spotify.com/v1/playlists/" + playlist.id();
 
         asyncInteractive.update("code", "100");
         asyncInteractive.update("description", "Retrieving playlist items from Spotify API");
@@ -74,7 +93,7 @@ public class PlaylistScan {
         } catch (Exception e) {
             asyncInteractive.update("code", "400");
             asyncInteractive.update("description", "Failed to Retrieve playlist items from Spotify API. ERROR: " + e.getMessage());
-            return null;
+            return;
         }
         // Build playlist record
         Playlist playlist = new Playlist(
@@ -83,14 +102,14 @@ public class PlaylistScan {
                 data.getJSONArray("images").getJSONObject(0).getString("url")
         );
 
-        List<Map<String, Object>> tracks = new ArrayList<>();
-        JSONObject tracksData = data.getJSONObject("tracks");
+        //List<Map<String, Object>> playlistScanTracks = new ArrayList<>();
+        JSONObject tracksData = data.getJSONObject("playlistScanTracks");
 
         String nextUrl = tracksData.optString("next", null);
 
         asyncInteractive.update("description", "Building playlist items");
 
-        // Populate tracklist
+        // Populate track list
         do {
             JSONArray items = tracksData.getJSONArray("items");
 
@@ -130,15 +149,9 @@ public class PlaylistScan {
 
                 Timestamp addedAt = Timestamp.valueOf(item.getString("added_at").replace("T", " ").replace("Z", ""));
 
-                // Create a new map
-                Map<String, Object> trackEntry = new HashMap<>();
-
-                // Add track and time to this map
-                trackEntry.put("track", track);
-                trackEntry.put("added_at", addedAt);
-
-                // Add this map to the tracklist
-                tracks.add(trackEntry);
+                // Add track to the trackList
+                String playlistScanTrackId = UUID.randomUUID().toString();
+                playlistScanTracks.add(new PlaylistScanTrack(playlistScanTrackId, this, track, i, addedAt));
 
             }
 
@@ -148,7 +161,7 @@ public class PlaylistScan {
                 } catch (Exception e) {
                     asyncInteractive.update("code", "400");
                     asyncInteractive.update("description", "Failed to Retrieve items from Spotify API NEXT URL. ERROR: " + e.getMessage());
-                    return null;
+                    return;
                 }
                 nextUrl = tracksData.optString("next", null);
             }
@@ -156,16 +169,6 @@ public class PlaylistScan {
 
         asyncInteractive.update("code", "200");
         asyncInteractive.update("description", "Scan completed");
-
-        return new PlaylistScan(
-                null,
-                playlist,
-                tracks,
-                accessToken.getUser(),
-                false,
-                new Timestamp(System.currentTimeMillis()),
-                null
-        );
     }
 
     private static JSONObject getData(String url, AccessToken accessToken, String next) throws Exception {
@@ -180,8 +183,8 @@ public class PlaylistScan {
             params.put("fields", "items(added_at,track(is_local,added_at,id,name,images,artists(name,id),album(id,name,release_date))),next");
         } else {
             fields = "id,name,images," +
-                    "tracks.items(added_at,track(is_local,id,name,images,artists(name,id),album(id,name,release_date)))," +
-                    "tracks.next";
+                    "playlistScanTracks.items(added_at,track(is_local,id,name,images,artists(name,id),album(id,name,release_date)))," +
+                    "playlistScanTracks.next";
 
             params = Map.of("fields", fields);
         }
