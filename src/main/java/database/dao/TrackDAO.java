@@ -36,10 +36,8 @@ public class TrackDAO extends GenericDAO<Track, String> {
 
     @Override
     public void add(Track track) {
-        // Add the album if it does not already exist
-        if (!albumDAO.exists(track.album())){
-            albumDAO.add(track.album());
-        }
+        // Add the album
+        albumDAO.add(track.album());
 
         // Add the actual track
         super.add(track);
