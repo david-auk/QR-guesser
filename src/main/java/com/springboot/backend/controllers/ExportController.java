@@ -7,10 +7,7 @@ import com.springboot.backend.utils.RedisInteractive;
 import com.springboot.backend.utils.RequestBodyUtil;
 import com.springboot.exceptions.JsonErrorResponseException;
 import com.springboot.exceptions.UserUnauthenticatedException;
-import database.dao.PlaylistDAO;
-import database.dao.PlaylistScanDAO;
-import database.dao.TrackDAO;
-import database.dao.UserDAO;
+import database.dao.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -63,9 +60,11 @@ public class ExportController {
         // Add to database
         try (PlaylistDAO playlistDAO = new PlaylistDAO()){
             try (UserDAO userDAO = new UserDAO()){
-                try (TrackDAO trackDAO = new TrackDAO()){
-                    try (PlaylistScanDAO playlistScanDAO = new PlaylistScanDAO(playlistDAO, userDAO, trackDAO)){
-                        playlistScanDAO.add(playlistScan);
+                try (AlbumDAO albumDAO = new AlbumDAO()){
+                    try (TrackDAO trackDAO = new TrackDAO(albumDAO)){
+                        try (PlaylistScanDAO playlistScanDAO = new PlaylistScanDAO(playlistDAO, userDAO, trackDAO)){
+                            playlistScanDAO.add(playlistScan);
+                        }
                     }
                 }
             }

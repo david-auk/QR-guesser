@@ -11,8 +11,11 @@ import java.util.List;
 
 public class PlaylistScanTrackDAO extends GenericDAO<PlaylistScanTrack, String> {
 
+    private final TrackDAO trackDAO;
+
     public PlaylistScanTrackDAO(PlaylistScanDAO playlistScanDAO, TrackDAO trackDAO) {
         super(new PlaylistScanTrackTable(playlistScanDAO, trackDAO));
+        this.trackDAO = trackDAO;
     }
 
     public List<PlaylistScanTrack> getFromPlaylistScan(String playlistId) {
@@ -26,5 +29,17 @@ public class PlaylistScanTrackDAO extends GenericDAO<PlaylistScanTrack, String> 
             throw new RuntimeException(e);
         }
         return playlistScanTracks;
+    }
+
+    @Override
+    public void add(PlaylistScanTrack playlistScanTrack) {
+
+        // Add the track if it does not already exist
+        if (!trackDAO.exists(playlistScanTrack.track())){
+            trackDAO.add(playlistScanTrack.track());
+        }
+
+        // Add the actual playlistScanTrack
+        super.add(playlistScanTrack);
     }
 }
