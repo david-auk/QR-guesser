@@ -3,7 +3,6 @@ package database.dao;
 import database.core.GenericDAO;
 import database.tables.TrackTable;
 import spotify.Artist;
-import spotify.PlaylistScanTrack;
 import spotify.Track;
 
 import java.sql.PreparedStatement;
@@ -15,7 +14,7 @@ public class TrackDAO extends GenericDAO<Track, String> {
     private final ArtistDAO artistDAO;
 
     public TrackDAO(AlbumDAO albumDAO, ArtistDAO artistDAO) {
-        super(new TrackTable());
+        super(new TrackTable(albumDAO, artistDAO));
         this.albumDAO = albumDAO;
         this.artistDAO = artistDAO;
     }

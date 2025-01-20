@@ -44,7 +44,7 @@ CREATE TABLE album (
 -- Create the `track` table
 CREATE TABLE track (
     id VARCHAR(255) PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     album_id VARCHAR(255) NOT NULL,
     FOREIGN KEY (album_id) REFERENCES album(id) ON DELETE CASCADE
 );

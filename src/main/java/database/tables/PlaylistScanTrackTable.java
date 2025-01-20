@@ -1,6 +1,7 @@
 package database.tables;
 
 import database.core.Table;
+import database.core.TimestampedTable;
 import database.dao.PlaylistScanDAO;
 import database.dao.TrackDAO;
 import spotify.PlaylistScanTrack;
@@ -9,14 +10,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class PlaylistScanTrackTable extends Table<PlaylistScanTrack, String> {
+public class PlaylistScanTrackTable extends TimestampedTable<PlaylistScanTrack, String> {
     private final PlaylistScanDAO playlistScanDAO;
     private final TrackDAO trackDAO;
 
     public PlaylistScanTrackTable(PlaylistScanDAO playlistScanDAO, TrackDAO trackDAO) {
-        super("playlist_scan_track", "id", String.class,
-                "addQuery",
-                "updateQuery"
+        super("playlist_scan_track", "id", String.class, "track_added_at",
+                "INSERT INTO playlist_scan_track (id, playlist_scan_id, track_id, track_playlist_scan_index, track_added_at) VALUES (?, ?, ?, ?, ?)",
+                "UPDATE playlist_scan_track SET playlist_scan_id = ?, track_id = ?, track_playlist_scan_index = ?, track_added_at = ? WHERE id = ?"
         );
         this.playlistScanDAO = playlistScanDAO;
         this.trackDAO = trackDAO;
@@ -24,12 +25,20 @@ public class PlaylistScanTrackTable extends Table<PlaylistScanTrack, String> {
 
     @Override
     public void prepareAddStatement(PreparedStatement unPreparedStatement, PlaylistScanTrack playlistScanTrack) throws SQLException {
-
+        unPreparedStatement.setString(1,playlistScanTrack.id());
+        unPreparedStatement.setString(2,playlistScanTrack.playlistScan().getId());
+        unPreparedStatement.setString(3,playlistScanTrack.track().id());
+        unPreparedStatement.setInt(4,playlistScanTrack.index());
+        unPreparedStatement.setTimestamp(5,playlistScanTrack.addedAt());
     }
 
     @Override
     public void prepareUpdateStatement(PreparedStatement unPreparedStatement, PlaylistScanTrack playlistScanTrack) throws SQLException {
-
+        unPreparedStatement.setString(1, playlistScanTrack.playlistScan().getId());
+        unPreparedStatement.setString(2, playlistScanTrack.track().id());
+        unPreparedStatement.setInt(3, playlistScanTrack.index());
+        unPreparedStatement.setTimestamp(4, playlistScanTrack.addedAt());
+        unPreparedStatement.setString(5, playlistScanTrack.id());
     }
 
     @Override

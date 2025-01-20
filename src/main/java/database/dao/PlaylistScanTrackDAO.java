@@ -1,15 +1,14 @@
 package database.dao;
 
-import database.core.GenericDAO;
+import database.core.TimestampedDAO;
 import database.tables.PlaylistScanTrackTable;
 import spotify.PlaylistScanTrack;
-
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PlaylistScanTrackDAO extends GenericDAO<PlaylistScanTrack, String> {
+public class PlaylistScanTrackDAO extends TimestampedDAO<PlaylistScanTrack, String> {
 
     private final TrackDAO trackDAO;
 

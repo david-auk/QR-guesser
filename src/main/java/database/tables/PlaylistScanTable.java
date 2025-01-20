@@ -27,18 +27,25 @@ public class PlaylistScanTable extends TimestampedTable<PlaylistScan, String> {
         this.playlistDAO = playlistDAO;
         this.playlistScanTrackDAO = playlistScanTrackDAO;
         this.userDAO = userDAO;
-
-
     }
 
     @Override
     public void prepareAddStatement(PreparedStatement unPreparedStatement, PlaylistScan playlistScan) throws SQLException {
         unPreparedStatement.setString(1, playlistScan.getId());
+        unPreparedStatement.setString(2, playlistScan.getPlaylist().id());
+        unPreparedStatement.setString(3, playlistScan.getRequestedByUser().id());
+        unPreparedStatement.setBoolean(4, playlistScan.isExportComplete());
+        unPreparedStatement.setString(5, getExtendsPlaylistScanId(playlistScan));
+        unPreparedStatement.setTimestamp(6, playlistScan.getTimestamp());
     }
 
     @Override
     public void prepareUpdateStatement(PreparedStatement unPreparedStatement, PlaylistScan playlistScan) throws SQLException {
-
+        unPreparedStatement.setString(1, playlistScan.getPlaylist().id());
+        unPreparedStatement.setString(2, playlistScan.getRequestedByUser().id());
+        unPreparedStatement.setBoolean(3, playlistScan.isExportComplete());
+        unPreparedStatement.setString(4, getExtendsPlaylistScanId(playlistScan));
+        unPreparedStatement.setString(5, playlistScan.getId());
     }
 
     @Override
@@ -59,5 +66,10 @@ public class PlaylistScanTable extends TimestampedTable<PlaylistScan, String> {
     @Override
     public String getPrimaryKey(PlaylistScan playlistScan) {
         return playlistScan.getId();
+    }
+
+    private String getExtendsPlaylistScanId(PlaylistScan playlistScan){
+        PlaylistScan extendsPlaylistScan = playlistScan.getExtendsPlaylistScan();
+        return extendsPlaylistScan == null ? null : extendsPlaylistScan.getId();
     }
 }
